@@ -3,4 +3,4 @@ WORKDIR /build
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
-CMD ["python", "-m", "pytest", "tests/", "-v", "--tb=short", "--cov=app", "--cov-report=term-missing", "--cov-fail-under=89"]
+CMD ["python", "-m", "pytest", "tests/", "-v", "--tb=short", "--cov=app", "--cov-report=term-missing", "--cov-fail-under=90"]
