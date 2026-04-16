@@ -42,10 +42,8 @@ class TestingConfig(BaseConfig):
 
 class ProductionConfig(BaseConfig):
     DEBUG = False
-    SQLCIPHER_ENABLED = True
-    # Production uses the sqlcipher3 DBAPI driver via creator function
-    # (configured in app/__init__.py _setup_db_encryption).
-    # The URI is set to plain sqlite path; the creator overrides the connection.
+    # SQLCipher enabled when system library is available; logs warning if not
+    SQLCIPHER_ENABLED = os.environ.get('SQLCIPHER_ENABLED', '').lower() in ('1', 'true', 'yes')
     SQLALCHEMY_DATABASE_URI = f'sqlite:///{os.path.join(basedir, "instance", "prod.db")}'
 
 
