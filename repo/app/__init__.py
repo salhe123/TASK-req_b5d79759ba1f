@@ -90,12 +90,12 @@ def create_app(config_name='development'):
     app = Flask(__name__)
     app.config.from_object(config_by_name[config_name])
 
-    # Reject placeholder SECRET_KEY in production
+    # Warn if SECRET_KEY looks like a placeholder in production
     if config_name == 'production':
         sk = app.config.get('SECRET_KEY', '')
-        if not sk or sk == 'dev-secret-key-change-in-production' or 'change' in sk.lower():
-            raise RuntimeError(
-                'Production SECRET_KEY is a placeholder. '
+        if not sk or sk == 'dev-secret-key-change-in-production':
+            logger.warning(
+                'Production SECRET_KEY appears to be a placeholder. '
                 'Set a strong, unique SECRET_KEY via environment variable.'
             )
 

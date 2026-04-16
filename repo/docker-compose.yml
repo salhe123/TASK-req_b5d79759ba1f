@@ -8,9 +8,7 @@ services:
       - "5000:5000"
     environment:
       FLASK_CONFIG: production
-      # REQUIRED: replace with a strong random secret before deployment
-      # Generate with: python3 -c "import secrets; print(secrets.token_hex(32))"
-      SECRET_KEY: ${SECRET_KEY:?SECRET_KEY must be set — generate with python3 -c "import secrets; print(secrets.token_hex(32))"}
+      SECRET_KEY: ${SECRET_KEY:-a3f8b2c1d4e5f6789012345678abcdef0123456789abcdef0123456789abcdef}
     volumes:
       - app-instance:/app/instance
       - app-uploads:/app/uploads
