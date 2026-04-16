@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Eligibility Check - {{ member.full_name }} - Field Service Manager{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-row">
+        <div>
+            <h2>Eligibility Check: {{ member.full_name }}</h2>
+            <p class="text-muted">Check if this member is eligible for service at their address</p>
+        </div>
+        <div class="page-actions">
+            <a href="{{ url_for('dispatch.member_addresses', member_id=member.id) }}" class="btn btn-secondary">Addresses</a>
+            <a href="{{ url_for('members.detail', member_id=member.id) }}" class="btn btn-secondary">Back to Member</a>
+        </div>
+    </div>
+</div>
+
+<div class="detail-grid">
+    <div class="card">
+        <h3>Run Eligibility Check</h3>
+        <form method="POST" hx-post="{{ url_for('dispatch.check_eligibility', member_id=member.id) }}"
+              hx-target="#eligibility-result">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="form-group">
+                <label for="address_id">Select Address</label>
+                <select id="address_id" name="address_id" class="form-control">
+                    <option value="">Use Primary Address</option>
+                    {% for addr in addresses %}
+                        <option value="{{ addr.id }}">
+                            {{ addr.label|title }}: {{ addr.street }}, {{ addr.city }}
+                            {% if addr.is_primary %}(Primary){% endif %}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Check Eligibility</button>
+        </form>
+
+        <div id="eligibility-result" style="margin-top: 1rem;">
+            {% if result %}
+                {% include "dispatch/partials/eligibility_result.html" %}
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Recent Checks</h3>
+        {% if logs %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Result</th>
+                        <th>Reason</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr>
+                        <td>{{ log.created_at|fmt_datetime }}</td>
+                        <td>
+                            <span class="badge badge-{{ 'active' if log.is_eligible else 'inactive' }}">
+                                {{ 'Eligible' if log.is_eligible else 'Not Eligible' }}
+                            </span>
+                        </td>
+                        <td>{{ log.reason }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="text-muted">No previous checks.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

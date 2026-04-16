@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}New Member - Field Service Manager{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>New Member</h2>
+</div>
+
+<div class="card">
+    <div id="member-form-container">
+        {% include "members/partials/member_form.html" %}
+    </div>
+</div>
+{% endblock %}

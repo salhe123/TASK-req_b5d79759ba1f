@@ -1,0 +1,53 @@
+{% if addresses %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Label</th>
+            <th>Street</th>
+            <th>City</th>
+            <th>State</th>
+            <th>ZIP</th>
+            <th>Region</th>
+            <th>Coordinates</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for addr in addresses %}
+        <tr>
+            <td>
+                {{ addr.label }}
+                {% if addr.is_primary %}
+                    <span class="badge badge-active">Primary</span>
+                {% endif %}
+            </td>
+            <td>{{ addr.street }}</td>
+            <td>{{ addr.city }}</td>
+            <td>{{ addr.state }}</td>
+            <td>{{ addr.zip_code }}</td>
+            <td>{{ addr.region or '-' }}</td>
+            <td>
+                {% if addr.latitude and addr.longitude %}
+                    {{ "%.4f"|format(addr.latitude) }}, {{ "%.4f"|format(addr.longitude) }}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+            <td>
+                <a href="{{ url_for('dispatch.edit_address', address_id=addr.id) }}" class="btn btn-secondary btn-sm">Edit</a>
+                <button class="btn btn-danger btn-sm"
+                        hx-post="{{ url_for('dispatch.delete_address', address_id=addr.id) }}"
+                        hx-target="#address-list"
+                        hx-confirm="Delete this address?">
+                    Delete
+                </button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="card">
+    <p>No addresses found. <a href="{{ url_for('dispatch.create_address', member_id=member.id) }}">Add one</a>.</p>
+</div>
+{% endif %}

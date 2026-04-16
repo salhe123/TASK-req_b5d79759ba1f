@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Devices: {{ target_user.username }} - Field Service Manager{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-row">
+        <h2>Trusted Devices: {{ target_user.username }}</h2>
+        <div class="page-actions">
+            {% if devices %}
+            <form method="POST" action="{{ url_for('admin.revoke_all_devices', user_id=target_user.id) }}"
+                  hx-confirm="Revoke ALL devices for {{ target_user.username }}?">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-danger btn-sm">Revoke All</button>
+            </form>
+            {% endif %}
+            <a href="{{ url_for('admin.users') }}" class="btn btn-secondary">Back to Users</a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    {% if devices %}
+    <table class="table">
+        <thead>
+            <tr><th>Device Name</th><th>Last Used</th><th>Registered</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+            {% for d in devices %}
+            <tr>
+                <td>{{ d.device_name or 'Unknown' }}</td>
+                <td>{{ d.last_used|fmt_datetime or 'Never' }}</td>
+                <td>{{ d.created_at|fmt_datetime }}</td>
+                <td>
+                    <form method="POST" action="{{ url_for('admin.revoke_device', device_id=d.id) }}"
+                          hx-confirm="Revoke this device?">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-danger btn-sm">Revoke</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="text-muted">No trusted devices registered for this user.</p>
+    {% endif %}
+</div>
+{% endblock %}

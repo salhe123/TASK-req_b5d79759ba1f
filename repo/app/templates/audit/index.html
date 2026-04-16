@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Audit Logs - Field Service Manager{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-row">
+        <h2>Audit Logs</h2>
+        <div class="page-actions">
+            <a href="{{ url_for('audit.alerts') }}" class="btn btn-danger">
+                Anomaly Alerts
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="audit-stats">
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.total }}</div>
+        <div class="stat-label">Total Events (7d)</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value stat-danger">{{ stats.anomaly_count }}</div>
+        <div class="stat-label">Anomalies</div>
+    </div>
+    {% for cat in stats.by_category[:4] %}
+    <div class="stat-card">
+        <div class="stat-value">{{ cat.count }}</div>
+        <div class="stat-label">{{ cat.category|title }}</div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="filters-bar">
+    <form hx-get="{{ url_for('audit.index') }}" hx-target="#audit-log-table" hx-push-url="true">
+        <div class="filters-row">
+            <input type="text" name="q" class="form-control" placeholder="Search logs..."
+                   value="{{ query }}"
+                   hx-get="{{ url_for('audit.index') }}" hx-target="#audit-log-table"
+                   hx-trigger="keyup changed delay:300ms"
+                   hx-include="[name='category'], [name='action'], [name='entity_type'], [name='anomalies'], [name='date_from'], [name='date_to']">
+
+            <select name="category" class="form-control"
+                    hx-get="{{ url_for('audit.index') }}" hx-target="#audit-log-table"
+                    hx-include="[name='q'], [name='action'], [name='entity_type'], [name='anomalies'], [name='date_from'], [name='date_to']">
+                <option value="">All Categories</option>
+                {% for c in ['auth', 'member', 'workflow', 'eligibility', 'search', 'system'] %}
+                    <option value="{{ c }}" {{ 'selected' if category == c }}>{{ c|title }}</option>
+                {% endfor %}
+            </select>
+
+            <input type="text" name="entity_type" class="form-control" placeholder="Entity type..."
+                   value="{{ entity_type or '' }}" style="max-width: 140px;">
+
+            <input type="date" name="date_from" class="form-control" value="{{ date_from }}" style="max-width: 160px;">
+            <input type="date" name="date_to" class="form-control" value="{{ date_to }}" style="max-width: 160px;">
+
+            <label class="form-check">
+                <input type="checkbox" name="anomalies" value="1"
+                       {{ 'checked' if anomalies }}
+                       hx-get="{{ url_for('audit.index') }}" hx-target="#audit-log-table"
+                       hx-include="[name='q'], [name='category'], [name='action'], [name='entity_type'], [name='date_from'], [name='date_to']">
+                <span>Anomalies Only</span>
+            </label>
+        </div>
+    </form>
+</div>
+
+<div id="audit-log-table">
+    {% include "audit/partials/log_table.html" %}
+</div>
+{% endblock %}

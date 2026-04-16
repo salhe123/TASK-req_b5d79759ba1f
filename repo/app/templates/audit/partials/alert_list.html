@@ -1,0 +1,35 @@
+{% if alerts %}
+<div class="alerts-list">
+    {% for alert in alerts %}
+    <div class="card alert-card alert-card-{{ alert.severity }} {{ 'alert-resolved' if alert.is_resolved }}">
+        <div class="alert-card-header">
+            <div>
+                <span class="badge badge-{{ 'inactive' if alert.severity == 'critical' else ('pending' if alert.severity == 'warning' else 'active') }}">
+                    {{ alert.severity|upper }}
+                </span>
+                <strong>{{ alert.alert_type }}</strong>
+            </div>
+            <span class="text-muted">{{ alert.created_at|fmt_datetime }}</span>
+        </div>
+        <p>{{ alert.description }}</p>
+        {% if alert.is_resolved %}
+            <p class="text-muted">
+                Resolved {{ alert.resolved_at|fmt_datetime }}
+                {% if alert.resolver %} by {{ alert.resolver.username }}{% endif %}
+            </p>
+        {% else %}
+            <button class="btn btn-success btn-sm"
+                    hx-post="{{ url_for('audit.resolve_alert', alert_id=alert.id) }}"
+                    hx-target="#alert-list"
+                    hx-confirm="Mark this alert as resolved?">
+                Resolve
+            </button>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card">
+    <p class="text-muted">No {{ 'unresolved ' if not show_resolved is defined else '' }}alerts.</p>
+</div>
+{% endif %}

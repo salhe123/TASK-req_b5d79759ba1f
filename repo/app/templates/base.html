@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Field Service Manager{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="{{ url_for('static', filename='js/htmx.min.js') }}"></script>
+</head>
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token() }}"}'>
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <a href="{{ url_for('main.index') }}">Field Service Manager</a>
+        </div>
+        <div class="navbar-menu">
+            {% if current_user is defined and current_user.is_authenticated %}
+                <a href="{{ url_for('main.index') }}">Dashboard</a>
+
+                {% if current_user.role in ['admin', 'manager', 'operator'] %}
+                    <a href="{{ url_for('members.index') }}">Members</a>
+                {% endif %}
+
+                <a href="{{ url_for('search.index') }}">Search</a>
+
+                {% if current_user.role in ['admin', 'manager'] %}
+                    <a href="{{ url_for('dispatch.eligibility') }}">Dispatch</a>
+                {% endif %}
+
+                {% if current_user.role == 'admin' %}
+                    <a href="{{ url_for('admin.dashboard') }}">Admin</a>
+                    <a href="{{ url_for('audit.index') }}">Audit Logs</a>
+                    <a href="{{ url_for('cleansing.index') }}">Data Cleansing</a>
+                {% endif %}
+
+                <div class="navbar-right">
+                    <span class="user-info">{{ current_user.username }} ({{ current_user.role }})</span>
+                    <a href="#" hx-post="/auth/logout" hx-target="body">Logout</a>
+                </div>
+            {% else %}
+                <div class="navbar-right">
+                    <a href="/auth/login">Login</a>
+                </div>
+            {% endif %}
+        </div>
+    </nav>
+
+    <main class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div id="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            {{ message }}
+                            <button class="alert-close" onclick="this.parentElement.remove()">&times;</button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div id="main-content">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>Field Service Membership & Data Governance System &mdash; Offline Mode</p>
+    </footer>
+
+    <div id="htmx-indicator" class="htmx-indicator">
+        <div class="spinner"></div>
+    </div>
+</body>
+</html>

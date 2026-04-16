@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Field Service Manager{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <h2>Sign In</h2>
+        <p class="auth-subtitle">Field Service Membership System</p>
+
+        <div id="login-form-container">
+            {% include "auth/partials/login_form.html" %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% if violations %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Time</th>
+            <th>Metric</th>
+            <th>Threshold</th>
+            <th>Actual</th>
+            <th>Severity</th>
+            <th>Details</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for v in violations %}
+        <tr class="{{ 'anomaly-row' if v.severity == 'critical' }}">
+            <td>{{ v.created_at|fmt_datetime }}</td>
+            <td>{{ v.metric_type|replace('_', ' ')|title }}</td>
+            <td>{{ v.threshold_ms|round(0)|int }}ms</td>
+            <td><strong>{{ v.actual_ms|round(1) }}ms</strong></td>
+            <td>
+                <span class="badge badge-{{ 'inactive' if v.severity == 'critical' else 'pending' }}">
+                    {{ v.severity|upper }}
+                </span>
+            </td>
+            <td class="audit-details">{{ v.details or '-' }}</td>
+            <td>
+                {% if not v.is_acknowledged %}
+                    <button class="btn btn-success btn-sm"
+                            hx-post="{{ url_for('sla.acknowledge', violation_id=v.id) }}"
+                            hx-target="#violation-list">
+                        Acknowledge
+                    </button>
+                {% else %}
+                    <span class="text-muted">Acknowledged</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="text-muted">No violations found.</p>
+{% endif %}

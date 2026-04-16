@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Edit' if edit is defined else 'New' }} Site Address - Field Service Manager{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>{{ 'Edit' if edit is defined else 'New' }} Site Address</h2>
+</div>
+
+<div class="card">
+    {% set action = url_for('dispatch.edit_site_address', site_id=site.id) if edit is defined and site is defined else url_for('dispatch.create_site_address') %}
+    <form method="POST" action="{{ action }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        {% if edit is defined and site is defined and site %}
+            <input type="hidden" name="version" value="{{ site.version }}">
+        {% endif %}
+
+        <div class="form-group">
+            <label for="name">Site Name *</label>
+            <input type="text" id="name" name="name" class="form-control"
+                   value="{{ data.get('name', '') }}" required>
+        </div>
+
+        <div class="form-group">
+            <label for="street">Street *</label>
+            <input type="text" id="street" name="street" class="form-control"
+                   value="{{ data.get('street', '') }}" required>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="city">City *</label>
+                <input type="text" id="city" name="city" class="form-control"
+                       value="{{ data.get('city', '') }}" required>
+            </div>
+            <div class="form-group">
+                <label for="state">State *</label>
+                <input type="text" id="state" name="state" class="form-control"
+                       value="{{ data.get('state', '') }}" required>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="zip_code">ZIP Code *</label>
+                <input type="text" id="zip_code" name="zip_code" class="form-control"
+                       value="{{ data.get('zip_code', '') }}" required>
+            </div>
+            <div class="form-group">
+                <label for="region">Region</label>
+                <input type="text" id="region" name="region" class="form-control"
+                       value="{{ data.get('region', '') }}">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="latitude">Latitude</label>
+                <input type="number" step="any" id="latitude" name="latitude" class="form-control"
+                       value="{{ data.get('latitude', '') }}">
+            </div>
+            <div class="form-group">
+                <label for="longitude">Longitude</label>
+                <input type="number" step="any" id="longitude" name="longitude" class="form-control"
+                       value="{{ data.get('longitude', '') }}">
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                {{ 'Update Site Address' if edit is defined else 'Create Site Address' }}
+            </button>
+            <a href="{{ url_for('dispatch.site_addresses') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Site Address Book - Field Service Manager{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-row">
+        <h2>Site Address Book</h2>
+        <div class="page-actions">
+            <a href="{{ url_for('dispatch.create_site_address') }}" class="btn btn-primary">New Site Address</a>
+            <a href="{{ url_for('dispatch.service_areas') }}" class="btn btn-secondary">Service Areas</a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    {% if sites %}
+    <table class="table">
+        <thead>
+            <tr><th>Name</th><th>Street</th><th>City</th><th>State</th><th>Region</th><th>Active</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+            {% for s in sites %}
+            <tr>
+                <td><strong>{{ s.name }}</strong></td>
+                <td>{{ s.street }}</td>
+                <td>{{ s.city }}</td>
+                <td>{{ s.state }}</td>
+                <td>{{ s.region or '-' }}</td>
+                <td><span class="badge badge-{{ 'active' if s.is_active else 'inactive' }}">{{ 'Active' if s.is_active else 'Inactive' }}</span></td>
+                <td>
+                    <a href="{{ url_for('dispatch.edit_site_address', site_id=s.id) }}" class="btn btn-secondary btn-sm">Edit</a>
+                    <form method="POST" action="{{ url_for('dispatch.delete_site_address', site_id=s.id) }}"
+                          hx-post="{{ url_for('dispatch.delete_site_address', site_id=s.id) }}"
+                          hx-confirm="Delete site address {{ s.name }}?">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="text-muted">No site addresses defined yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

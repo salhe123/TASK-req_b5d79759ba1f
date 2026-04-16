@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Timeline - {{ member.full_name }} - Field Service Manager{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-row">
+        <h2>Timeline: {{ member.full_name }}</h2>
+        <div class="page-actions">
+            <a href="{{ url_for('workflow.index', member_id=member.id) }}" class="btn btn-primary">Workflow</a>
+            <a href="{{ url_for('members.detail', member_id=member.id) }}" class="btn btn-secondary">Back to Member</a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    {% include "members/partials/timeline.html" %}
+</div>
+{% endblock %}

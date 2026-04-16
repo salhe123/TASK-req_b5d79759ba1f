@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Members - Field Service Manager{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-row">
+        <h2>Members</h2>
+        <a href="{{ url_for('members.create') }}" class="btn btn-primary">Add Member</a>
+    </div>
+</div>
+
+<div class="filters-bar">
+    <form hx-get="{{ url_for('members.index') }}" hx-target="#member-list-container" hx-push-url="true">
+        <div class="filters-row">
+            <input type="text" name="search" class="form-control" placeholder="Search members..."
+                   value="{{ search }}" hx-trigger="keyup changed delay:300ms"
+                   hx-get="{{ url_for('members.index') }}" hx-target="#member-list-container">
+
+            <select name="status" class="form-control"
+                    hx-get="{{ url_for('members.index') }}" hx-target="#member-list-container">
+                <option value="">All Statuses</option>
+                {% for s in ['pending', 'active', 'inactive', 'suspended', 'cancelled'] %}
+                    <option value="{{ s }}" {{ 'selected' if status == s }}>{{ s|title }}</option>
+                {% endfor %}
+            </select>
+
+            <select name="membership_type" class="form-control"
+                    hx-get="{{ url_for('members.index') }}" hx-target="#member-list-container">
+                <option value="">All Types</option>
+                {% for t in ['basic', 'standard', 'premium', 'enterprise'] %}
+                    <option value="{{ t }}" {{ 'selected' if membership_type == t }}>{{ t|title }}</option>
+                {% endfor %}
+            </select>
+
+            <select name="tag" class="form-control"
+                    hx-get="{{ url_for('members.index') }}" hx-target="#member-list-container">
+                <option value="">All Tags</option>
+                {% for t in tags %}
+                    <option value="{{ t.name }}" {{ 'selected' if tag == t.name }}>{{ t.name }}</option>
+                {% endfor %}
+            </select>
+
+            <label class="form-check">
+                <input type="checkbox" name="archived" value="1"
+                       {{ 'checked' if archived }}
+                       hx-get="{{ url_for('members.index') }}" hx-target="#member-list-container">
+                <span>Archived</span>
+            </label>
+        </div>
+    </form>
+</div>
+
+<div id="member-list-container">
+    {% include "members/partials/member_list.html" %}
+</div>
+{% endblock %}

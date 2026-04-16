@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Trusted Devices - Field Service Manager{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Trusted Devices</h2>
+    <p>Manage devices trusted for your account (maximum 5).</p>
+</div>
+
+<div id="device-list">
+    {% include "auth/partials/device_list.html" %}
+</div>
+{% endblock %}

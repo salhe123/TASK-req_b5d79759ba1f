@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Service Areas - Field Service Manager{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-row">
+        <h2>Service Areas</h2>
+        <div class="page-actions">
+            <a href="{{ url_for('dispatch.create_service_area') }}" class="btn btn-primary">Add Service Area</a>
+            <a href="{{ url_for('dispatch.eligibility') }}" class="btn btn-secondary">Eligibility Overview</a>
+        </div>
+    </div>
+</div>
+
+{% if areas %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Region / Center</th>
+            <th>Radius</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for area in areas %}
+        <tr>
+            <td>{{ area.name }}</td>
+            <td>{{ area.area_type|title }}</td>
+            <td>
+                {% if area.area_type == 'region' %}
+                    {{ area.region or '-' }}
+                {% else %}
+                    {% if area.center_latitude and area.center_longitude %}
+                        {{ "%.4f"|format(area.center_latitude) }}, {{ "%.4f"|format(area.center_longitude) }}
+                    {% else %}
+                        -
+                    {% endif %}
+                {% endif %}
+            </td>
+            <td>{{ area.radius_miles if area.area_type == 'radius' else '-' }} {{ 'mi' if area.area_type == 'radius' else '' }}</td>
+            <td>
+                <span class="badge badge-{{ 'active' if area.is_active else 'inactive' }}">
+                    {{ 'Active' if area.is_active else 'Inactive' }}
+                </span>
+            </td>
+            <td>
+                <a href="{{ url_for('dispatch.edit_service_area', area_id=area.id) }}" class="btn btn-secondary btn-sm">Edit</a>
+                <button class="btn btn-danger btn-sm"
+                        hx-post="{{ url_for('dispatch.delete_service_area', area_id=area.id) }}"
+                        hx-confirm="Delete this service area?">
+                    Delete
+                </button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="card">
+    <p>No service areas configured. <a href="{{ url_for('dispatch.create_service_area') }}">Create one</a>.</p>
+</div>
+{% endif %}
+{% endblock %}

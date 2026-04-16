@@ -1,0 +1,39 @@
+<form method="POST" action="{{ url_for('auth.login') }}"
+      hx-post="{{ url_for('auth.login') }}"
+      hx-target="#login-form-container"
+      hx-swap="innerHTML">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    {% if error is defined and error %}
+        <div class="alert alert-danger">
+            {{ error }}
+            <button class="alert-close" onclick="this.parentElement.remove()">&times;</button>
+        </div>
+    {% endif %}
+
+    <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" class="form-control"
+               value="{{ username if username is defined else '' }}"
+               placeholder="Enter your username" required autofocus>
+    </div>
+
+    <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" class="form-control"
+               placeholder="Enter your password" required>
+    </div>
+
+    <div class="form-group form-check-row">
+        <label class="form-check">
+            <input type="checkbox" name="remember" value="1">
+            <span>Remember me</span>
+        </label>
+        <label class="form-check">
+            <input type="checkbox" name="trust_device" value="1">
+            <span>Trust this device</span>
+        </label>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+</form>

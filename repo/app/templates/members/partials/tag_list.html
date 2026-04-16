@@ -1,0 +1,12 @@
+<div class="tag-list">
+    {% for tag in member.tags %}
+        <span class="tag-badge" style="background-color: {{ tag.color }}20; color: {{ tag.color }}; border: 1px solid {{ tag.color }}40;">
+            {{ tag.name }}
+            <button class="tag-remove"
+                    hx-post="{{ url_for('members.remove_tag', member_id=member.id, tag_name=tag.name) }}"
+                    hx-target="#tag-container">&times;</button>
+        </span>
+    {% else %}
+        <span class="text-muted">No tags</span>
+    {% endfor %}
+</div>

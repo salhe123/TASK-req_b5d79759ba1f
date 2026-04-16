@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}SLA Violations - Field Service Manager{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-row">
+        <h2>SLA Violations</h2>
+        <div class="page-actions">
+            <a href="{{ url_for('sla.violations', acknowledged='1' if not show_acked else '0') }}"
+               class="btn btn-secondary">
+                {{ 'Hide Acknowledged' if show_acked else 'Show All' }}
+            </a>
+            <a href="{{ url_for('sla.dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+        </div>
+    </div>
+</div>
+
+<div class="filters-bar">
+    <div class="filters-row">
+        <select onchange="window.location.href=this.value" class="form-control">
+            <option value="{{ url_for('sla.violations') }}" {{ 'selected' if not severity }}>All Severities</option>
+            <option value="{{ url_for('sla.violations', severity='warning') }}" {{ 'selected' if severity == 'warning' }}>Warning</option>
+            <option value="{{ url_for('sla.violations', severity='critical') }}" {{ 'selected' if severity == 'critical' }}>Critical</option>
+        </select>
+    </div>
+</div>
+
+<div id="violation-list">
+    {% include "sla/partials/violation_list.html" %}
+</div>
+{% endblock %}

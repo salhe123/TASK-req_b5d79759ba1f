@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Edit' if edit is defined else 'New' }} Address - Field Service Manager{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>{{ 'Edit' if edit is defined else 'New' }} Address: {{ member.full_name }}</h2>
+</div>
+
+<div class="card">
+    {% set action = url_for('dispatch.edit_address', address_id=address.id) if edit is defined and address else url_for('dispatch.create_address', member_id=member.id) %}
+    <form method="POST" action="{{ action }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        {% if edit is defined and address is defined and address %}
+            <input type="hidden" name="version" value="{{ address.version }}">
+        {% endif %}
+        <div class="form-row">
+            <div class="form-group">
+                <label for="label">Label</label>
+                <select id="label" name="label" class="form-control">
+                    {% set current_label = data.get('label', 'primary') %}
+                    {% for l in ['primary', 'billing', 'service', 'shipping', 'other'] %}
+                        <option value="{{ l }}" {{ 'selected' if current_label == l }}>{{ l|title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-check" style="margin-top: 1.6rem;">
+                    <input type="checkbox" name="is_primary" value="1"
+                           {{ 'checked' if data.get('is_primary') }}>
+                    <span>Primary Address</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="street">Street *</label>
+            <input type="text" id="street" name="street" class="form-control"
+                   value="{{ data.get('street', '') }}" required>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="city">City *</label>
+                <input type="text" id="city" name="city" class="form-control"
+                       value="{{ data.get('city', '') }}" required>
+            </div>
+            <div class="form-group">
+                <label for="state">State *</label>
+                <input type="text" id="state" name="state" class="form-control"
+                       value="{{ data.get('state', '') }}" required>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="zip_code">ZIP Code *</label>
+                <input type="text" id="zip_code" name="zip_code" class="form-control"
+                       value="{{ data.get('zip_code', '') }}" required>
+            </div>
+            <div class="form-group">
+                <label for="country">Country</label>
+                <input type="text" id="country" name="country" class="form-control"
+                       value="{{ data.get('country', 'US') }}">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="region">Region</label>
+            <input type="text" id="region" name="region" class="form-control"
+                   value="{{ data.get('region', '') }}" placeholder="e.g. northeast, west-coast">
+        </div>
+
+        <div class="form-group">
+            <label>Location Pin (click the grid to set coordinates, or enter manually)</label>
+            <div id="floorplan-grid" style="position: relative; width: 100%; max-width: 600px; height: 300px; background: #f0f0f0; border: 2px solid #ccc; border-radius: 8px; cursor: crosshair; margin-bottom: 0.5rem; overflow: hidden;">
+                <!-- Grid lines -->
+                <svg width="100%" height="100%" style="position: absolute; top: 0; left: 0; pointer-events: none;">
+                    {% for i in range(1, 10) %}
+                    <line x1="{{ i * 10 }}%" y1="0" x2="{{ i * 10 }}%" y2="100%" stroke="#ddd" stroke-width="1" />
+                    <line x1="0" y1="{{ i * 10 }}%" x2="100%" y2="{{ i * 10 }}%" stroke="#ddd" stroke-width="1" />
+                    {% endfor %}
+                    <!-- Axis labels -->
+                    <text x="0" y="100%" font-size="10" fill="#999" dy="-2" dx="2">-90,-180</text>
+                    <text x="100%" y="12" font-size="10" fill="#999" text-anchor="end" dx="-2">90,180</text>
+                    <text x="50%" y="50%" font-size="11" fill="#bbb" text-anchor="middle" dy="4">Click to place pin</text>
+                </svg>
+                <!-- Pin marker -->
+                <div id="pin-marker" style="display: none; position: absolute; width: 20px; height: 20px; background: #dc3545; border: 2px solid #fff; border-radius: 50%; box-shadow: 0 2px 6px rgba(0,0,0,0.3); transform: translate(-50%, -50%); z-index: 10; pointer-events: none;"></div>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="latitude">Latitude</label>
+                <input type="number" step="any" id="latitude" name="latitude" class="form-control"
+                       value="{{ data.get('latitude', '') }}" placeholder="-90 to 90">
+            </div>
+            <div class="form-group">
+                <label for="longitude">Longitude</label>
+                <input type="number" step="any" id="longitude" name="longitude" class="form-control"
+                       value="{{ data.get('longitude', '') }}" placeholder="-180 to 180">
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                {{ 'Update Address' if edit is defined else 'Create Address' }}
+            </button>
+            <a href="{{ url_for('dispatch.member_addresses', member_id=member.id) }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<script>
+(function() {
+    var grid = document.getElementById('floorplan-grid');
+    var pin = document.getElementById('pin-marker');
+    var latInput = document.getElementById('latitude');
+    var lngInput = document.getElementById('longitude');
+
+    function updatePin(lat, lng) {
+        if (lat === '' || lng === '' || lat === null || lng === null) {
+            pin.style.display = 'none';
+            return;
+        }
+        lat = parseFloat(lat);
+        lng = parseFloat(lng);
+        if (isNaN(lat) || isNaN(lng)) {
+            pin.style.display = 'none';
+            return;
+        }
+        // Map lat (-90 to 90) -> y (100% to 0%), lng (-180 to 180) -> x (0% to 100%)
+        var x = ((lng + 180) / 360) * 100;
+        var y = ((90 - lat) / 180) * 100;
+        pin.style.left = x + '%';
+        pin.style.top = y + '%';
+        pin.style.display = 'block';
+    }
+
+    grid.addEventListener('click', function(e) {
+        var rect = grid.getBoundingClientRect();
+        var xPct = (e.clientX - rect.left) / rect.width;
+        var yPct = (e.clientY - rect.top) / rect.height;
+
+        var lng = (xPct * 360) - 180;
+        var lat = 90 - (yPct * 180);
+
+        lat = Math.max(-90, Math.min(90, lat));
+        lng = Math.max(-180, Math.min(180, lng));
+
+        latInput.value = lat.toFixed(6);
+        lngInput.value = lng.toFixed(6);
+        updatePin(lat, lng);
+    });
+
+    latInput.addEventListener('input', function() { updatePin(latInput.value, lngInput.value); });
+    lngInput.addEventListener('input', function() { updatePin(latInput.value, lngInput.value); });
+
+    // Initial placement if values exist
+    updatePin(latInput.value, lngInput.value);
+})();
+</script>
+{% endblock %}

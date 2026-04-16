@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Eligibility Overview - Field Service Manager{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-row">
+        <h2>Eligibility Overview</h2>
+        <div class="page-actions">
+            <a href="{{ url_for('dispatch.service_areas') }}" class="btn btn-primary">Service Areas</a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <h3>Recent Eligibility Checks</h3>
+    {% if logs %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Member</th>
+                    <th>Result</th>
+                    <th>Reason</th>
+                    <th>Checked By</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td>{{ log.created_at|fmt_datetime }}</td>
+                    <td>
+                        {% if log.member %}
+                            <a href="{{ url_for('members.detail', member_id=log.member_id) }}">
+                                {{ log.member.full_name }}
+                            </a>
+                        {% else %}
+                            #{{ log.member_id }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge badge-{{ 'active' if log.is_eligible else 'inactive' }}">
+                            {{ 'Eligible' if log.is_eligible else 'Not Eligible' }}
+                        </span>
+                    </td>
+                    <td>{{ log.reason }}</td>
+                    <td>{{ log.checker.username if log.checker else '-' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="text-muted">No eligibility checks performed yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

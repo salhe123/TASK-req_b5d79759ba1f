@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Field Service Manager{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <h1>Field Service Manager</h1>
+    <p>Membership & Data Governance System</p>
+
+    {% if current_user is defined and current_user.is_authenticated %}
+        {# Role mapping to prompt personas:
+           admin    -> Administrator (system admin, audit, SLA, cleansing, user mgmt)
+           manager  -> Dispatch (dispatch eligibility, member management, search)
+           operator -> Member Desk (daily member operations, workflows, search)
+           viewer   -> Read-only (search/browse only) #}
+
+        {% if current_user.role == 'admin' %}
+        <!-- Administrator Home: system overview with quick access to all modules -->
+        <div class="dashboard-grid">
+            <div class="card">
+                <h3>Admin Dashboard</h3>
+                <p>System health, metrics, and anomaly overview</p>
+                <a href="{{ url_for('admin.dashboard') }}" class="btn btn-primary btn-sm">Open</a>
+            </div>
+            <div class="card">
+                <h3>User Management</h3>
+                <p>Freeze, deactivate, or change user roles</p>
+                <a href="{{ url_for('admin.users') }}" class="btn btn-danger btn-sm">Manage Users</a>
+            </div>
+            <div class="card">
+                <h3>Audit Logs</h3>
+                <p>Review all system activity and anomaly alerts</p>
+                <a href="{{ url_for('audit.index') }}" class="btn btn-secondary btn-sm">View Logs</a>
+            </div>
+            <div class="card">
+                <h3>SLA Monitor</h3>
+                <p>Performance metrics and SLA compliance</p>
+                <a href="{{ url_for('sla.dashboard') }}" class="btn btn-secondary btn-sm">View SLA</a>
+            </div>
+            <div class="card">
+                <h3>Members</h3>
+                <p>Manage member records and lifecycle</p>
+                <a href="{{ url_for('members.index') }}" class="btn btn-primary btn-sm">Members</a>
+            </div>
+            <div class="card">
+                <h3>Data Cleansing</h3>
+                <p>CSV import, cleansing templates, and jobs</p>
+                <a href="{{ url_for('cleansing.index') }}" class="btn btn-secondary btn-sm">Cleansing</a>
+            </div>
+        </div>
+
+        {% elif current_user.role == 'manager' %}
+        <!-- Manager Home: member management and dispatch focus -->
+        <div class="dashboard-grid">
+            <div class="card">
+                <h3>Members</h3>
+                <p>Manage member records and lifecycle workflows</p>
+                <a href="{{ url_for('members.index') }}" class="btn btn-primary btn-sm">Members</a>
+            </div>
+            <div class="card">
+                <h3>Dispatch & Eligibility</h3>
+                <p>Service areas, addresses, and eligibility checks</p>
+                <a href="{{ url_for('dispatch.eligibility') }}" class="btn btn-primary btn-sm">Dispatch</a>
+            </div>
+            <div class="card">
+                <h3>Search</h3>
+                <p>Full-text search across all member records</p>
+                <a href="{{ url_for('search.index') }}" class="btn btn-primary btn-sm">Search</a>
+            </div>
+        </div>
+
+        {% elif current_user.role == 'operator' %}
+        <!-- Operator Home: member desk for daily operations -->
+        <div class="dashboard-grid">
+            <div class="card">
+                <h3>Member Desk</h3>
+                <p>Create and manage member records, run workflows</p>
+                <a href="{{ url_for('members.index') }}" class="btn btn-primary btn-sm">Members</a>
+            </div>
+            <div class="card">
+                <h3>Search</h3>
+                <p>Find members by name, email, or organization</p>
+                <a href="{{ url_for('search.index') }}" class="btn btn-primary btn-sm">Search</a>
+            </div>
+        </div>
+
+        {% else %}
+        <!-- Viewer Home: read-only search access -->
+        <div class="dashboard-grid">
+            <div class="card">
+                <h3>Search</h3>
+                <p>Search and browse member records</p>
+                <a href="{{ url_for('search.index') }}" class="btn btn-primary btn-sm">Search</a>
+            </div>
+        </div>
+        {% endif %}
+
+    {% else %}
+        <div class="login-prompt">
+            <p>Please <a href="/auth/login">log in</a> to access the system.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}User Management - Field Service Manager{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-row">
+        <h2>User Management</h2>
+        <div class="page-actions">
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div id="user-table-container">
+        {% include "admin/partials/user_table.html" %}
+    </div>
+</div>
+{% endblock %}

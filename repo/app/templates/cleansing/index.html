@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Data Cleansing - Field Service Manager{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-row">
+        <h2>Data Cleansing</h2>
+        <div class="page-actions">
+            <a href="{{ url_for('cleansing.upload') }}" class="btn btn-primary">Upload CSV</a>
+            <a href="{{ url_for('cleansing.create_template') }}" class="btn btn-secondary">New Template</a>
+        </div>
+    </div>
+</div>
+
+<div class="detail-grid">
+    <div class="card">
+        <h3>Templates</h3>
+        {% if templates %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Version</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in templates %}
+                <tr>
+                    <td><a href="{{ url_for('cleansing.view_template', template_id=t.id) }}">{{ t.name }}</a></td>
+                    <td>v{{ t.version }}</td>
+                    <td>{{ t.created_at|fmt_datetime }}</td>
+                    <td>
+                        <a href="{{ url_for('cleansing.edit_template', template_id=t.id) }}" class="btn btn-secondary btn-sm">Edit</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-muted">No templates yet. <a href="{{ url_for('cleansing.create_template') }}">Create one</a>.</p>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <h3>Recent Jobs</h3>
+        {% if jobs %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>File</th>
+                    <th>Status</th>
+                    <th>Clean/Flag/Dup</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for j in jobs %}
+                <tr>
+                    <td><a href="{{ url_for('cleansing.view_job', job_id=j.id) }}">#{{ j.id }}</a></td>
+                    <td>{{ j.filename }}</td>
+                    <td>
+                        <span class="badge badge-{{ 'active' if j.status == 'completed' else ('pending' if j.status == 'pending' else 'inactive') }}">
+                            {{ j.status|title }}
+                        </span>
+                    </td>
+                    <td>{{ j.clean_rows }}/{{ j.flagged_rows }}/{{ j.duplicate_rows }}</td>
+                    <td>{{ j.created_at|fmt_datetime }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-muted">No jobs yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

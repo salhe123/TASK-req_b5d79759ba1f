@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}{{ member.full_name }} - Field Service Manager{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-row">
+        <h2>{{ member.full_name }}</h2>
+        <div class="page-actions">
+            <a href="{{ url_for('workflow.index', member_id=member.id) }}" class="btn btn-primary">Workflow</a>
+            <a href="{{ url_for('dispatch.member_addresses', member_id=member.id) }}" class="btn btn-primary">Addresses</a>
+            <a href="{{ url_for('members.edit', member_id=member.id) }}" class="btn btn-secondary">Edit</a>
+            {% if member.is_archived %}
+                <button class="btn btn-success"
+                        hx-post="{{ url_for('members.restore', member_id=member.id) }}"
+                        hx-confirm="Restore this member?">
+                    Restore
+                </button>
+            {% else %}
+                <button class="btn btn-danger"
+                        hx-post="{{ url_for('members.delete', member_id=member.id) }}"
+                        hx-confirm="Archive this member?">
+                    Archive
+                </button>
+            {% endif %}
+            <a href="{{ url_for('members.index') }}" class="btn btn-secondary">Back to List</a>
+        </div>
+    </div>
+</div>
+
+{% if member.is_archived %}
+    <div class="alert alert-warning">This member is archived.</div>
+{% endif %}
+
+<div class="detail-grid">
+    <div class="card">
+        <h3>Member Information</h3>
+        <dl class="detail-list">
+            <dt>Name</dt>
+            <dd>{{ member.full_name }}</dd>
+            <dt>Email</dt>
+            <dd>{{ member.email }}</dd>
+            <dt>Phone</dt>
+            <dd>{{ member.phone or '-' }}</dd>
+            <dt>Organization</dt>
+            <dd>{{ member.organization or '-' }}</dd>
+            <dt>Membership Type</dt>
+            <dd>{{ member.membership_type|title }}</dd>
+            <dt>Status</dt>
+            <dd>
+                <span class="badge badge-{{ 'active' if member.status == 'active' else ('pending' if member.status == 'pending' else 'inactive') }}">
+                    {{ member.status|title }}
+                </span>
+            </dd>
+        </dl>
+    </div>
+
+    <div class="card">
+        <h3>Tags</h3>
+        <div id="tag-container">
+            {% include "members/partials/tag_list.html" %}
+        </div>
+
+        <form hx-post="{{ url_for('members.add_tag', member_id=member.id) }}"
+              hx-target="#tag-container" class="tag-form">
+            <input type="text" name="tag_name" class="form-control" placeholder="Add tag...">
+            <button type="submit" class="btn btn-primary btn-sm">Add</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h3>Details</h3>
+        <dl class="detail-list">
+            <dt>Notes</dt>
+            <dd>{{ member.notes or 'No notes.' }}</dd>
+            <dt>Created</dt>
+            <dd>{{ member.created_at|fmt_datetime }}</dd>
+            <dt>Updated</dt>
+            <dd>{{ member.updated_at|fmt_datetime }}</dd>
+            <dt>Version</dt>
+            <dd>{{ member.version }}</dd>
+        </dl>
+    </div>
+</div>
+{% endblock %}

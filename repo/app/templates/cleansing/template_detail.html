@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}{{ template.name }} v{{ template.version }} - Field Service Manager{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-row">
+        <div>
+            <h2>{{ template.name }} <span class="text-muted">v{{ template.version }}</span></h2>
+            <p class="text-muted">{{ template.description or 'No description' }}</p>
+        </div>
+        <div class="page-actions">
+            <a href="{{ url_for('cleansing.edit_template', template_id=template.id) }}" class="btn btn-secondary">Edit (New Version)</a>
+            <a href="{{ url_for('cleansing.upload') }}" class="btn btn-primary">Use Template</a>
+            <a href="{{ url_for('cleansing.index') }}" class="btn btn-secondary">Back</a>
+        </div>
+    </div>
+</div>
+
+<div class="detail-grid">
+    <div class="card">
+        <h3>Configuration</h3>
+        <dl class="detail-list">
+            <dt>Field Mapping</dt>
+            <dd><code>{{ template.field_mapping or '{}' }}</code></dd>
+            <dt>Missing Value Rules</dt>
+            <dd><code>{{ template.missing_value_rules or '{}' }}</code></dd>
+            <dt>Dedup Fields</dt>
+            <dd><code>{{ template.dedup_fields or '[]' }}</code></dd>
+            <dt>Dedup Threshold</dt>
+            <dd>{{ template.dedup_threshold }}</dd>
+            <dt>Format Rules</dt>
+            <dd><code>{{ template.format_rules or '{}' }}</code></dd>
+        </dl>
+    </div>
+
+    <div class="card">
+        <h3>Versions</h3>
+        <table class="table">
+            <thead>
+                <tr><th>Version</th><th>Active</th><th>Created</th></tr>
+            </thead>
+            <tbody>
+                {% for v in versions %}
+                <tr class="{{ 'anomaly-row' if v.id == template.id }}">
+                    <td><a href="{{ url_for('cleansing.view_template', template_id=v.id) }}">v{{ v.version }}</a></td>
+                    <td>
+                        <span class="badge badge-{{ 'active' if v.is_active else 'inactive' }}">
+                            {{ 'Active' if v.is_active else 'Inactive' }}
+                        </span>
+                    </td>
+                    <td>{{ v.created_at|fmt_datetime }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if jobs %}
+<div class="card" style="margin-top: 1.5rem;">
+    <h3>Recent Jobs</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th><th>File</th><th>Status</th><th>Clean/Flag/Dup</th><th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for j in jobs %}
+            <tr>
+                <td><a href="{{ url_for('cleansing.view_job', job_id=j.id) }}">#{{ j.id }}</a></td>
+                <td>{{ j.filename }}</td>
+                <td><span class="badge badge-{{ 'active' if j.status == 'completed' else 'inactive' }}">{{ j.status|title }}</span></td>
+                <td>{{ j.clean_rows }}/{{ j.flagged_rows }}/{{ j.duplicate_rows }}</td>
+                <td>{{ j.created_at|fmt_datetime }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,108 @@
+{% set action = url_for('members.edit', member_id=member.id) if member is defined and member else url_for('members.create') %}
+{% set is_edit = member is defined and member %}
+
+<form method="POST" action="{{ action }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    {% if error is defined and error %}
+        <div class="alert alert-danger">
+            {{ error }}
+            <button class="alert-close" onclick="this.parentElement.remove()">&times;</button>
+        </div>
+    {% endif %}
+
+    {% if is_edit %}
+        <input type="hidden" name="version" value="{{ member.version }}">
+    {% endif %}
+
+    <div class="form-row">
+        <div class="form-group">
+            <label for="first_name">First Name *</label>
+            <input type="text" id="first_name" name="first_name" class="form-control"
+                   value="{{ data.get('first_name', '') if data else '' }}" required
+                   hx-post="{{ url_for('members.validate_field') }}"
+                   hx-trigger="blur"
+                   hx-vals='{"field": "first_name", "value": ""}'
+                   hx-target="#first_name-feedback"
+                   hx-include="[name='first_name']"
+                   hx-swap="innerHTML">
+            <div id="first_name-feedback"></div>
+        </div>
+        <div class="form-group">
+            <label for="last_name">Last Name *</label>
+            <input type="text" id="last_name" name="last_name" class="form-control"
+                   value="{{ data.get('last_name', '') if data else '' }}" required
+                   hx-post="{{ url_for('members.validate_field') }}"
+                   hx-trigger="blur"
+                   hx-vals='{"field": "last_name", "value": ""}'
+                   hx-target="#last_name-feedback"
+                   hx-include="[name='last_name']"
+                   hx-swap="innerHTML">
+            <div id="last_name-feedback"></div>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="form-group">
+            <label for="email">Email *</label>
+            <input type="email" id="email" name="email" class="form-control"
+                   value="{{ data.get('email', '') if data else '' }}" required
+                   hx-post="{{ url_for('members.validate_field') }}"
+                   hx-trigger="blur changed delay:300ms"
+                   hx-vals='{"field": "email"{% if is_edit %}, "member_id": "{{ member.id }}"{% endif %}}'
+                   hx-target="#email-feedback"
+                   hx-include="[name='email']"
+                   hx-swap="innerHTML">
+            <div id="email-feedback"></div>
+        </div>
+        <div class="form-group">
+            <label for="phone">Phone</label>
+            <input type="text" id="phone" name="phone" class="form-control"
+                   value="{{ data.get('phone', '') if data else '' }}">
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="form-group">
+            <label for="membership_type">Membership Type</label>
+            <select id="membership_type" name="membership_type" class="form-control">
+                {% set current_type = data.get('membership_type', 'basic') if data else 'basic' %}
+                {% for t in ['basic', 'standard', 'premium', 'enterprise'] %}
+                    <option value="{{ t }}" {{ 'selected' if current_type == t }}>{{ t|title }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="organization">Organization</label>
+            <input type="text" id="organization" name="organization" class="form-control"
+                   value="{{ data.get('organization', '') if data else '' }}">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="tags">Tags (comma-separated)</label>
+        <input type="text" id="tags" name="tags" class="form-control"
+               value="{{ data.get('tags', '') if data else '' }}"
+               placeholder="e.g. vip, priority, new-customer">
+    </div>
+
+    <div class="form-group">
+        <label for="notes">Notes</label>
+        <textarea id="notes" name="notes" class="form-control" rows="3">{{ data.get('notes', '') if data else '' }}</textarea>
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">
+            {{ 'Update Member' if is_edit else 'Create Member' }}
+        </button>
+        <a href="{{ url_for('members.index') }}" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+
+<script>
+// Wire hx-vals with actual field values on blur
+document.querySelectorAll('[hx-vals]').forEach(function(el) {
+    el.addEventListener('htmx:configRequest', function(e) {
+        e.detail.parameters.value = el.value;
+    });
+});
+</script>

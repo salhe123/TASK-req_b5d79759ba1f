@@ -1,0 +1,86 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Last Login</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+        <tr {% if not user.is_active %}class="anomaly-row"{% endif %}>
+            <td>
+                <strong>{{ user.username }}</strong>
+                <a href="{{ url_for('admin.user_devices', user_id=user.id) }}" class="btn btn-secondary btn-sm" style="margin-left: 0.25rem; padding: 0.1rem 0.3rem; font-size: 0.75rem;">Devices</a>
+            </td>
+            <td>{{ user.email }}</td>
+            <td>
+                <form method="POST" action="{{ url_for('admin.change_role', user_id=user.id) }}"
+                      hx-post="{{ url_for('admin.change_role', user_id=user.id) }}"
+                      hx-target="#user-table-container" hx-swap="innerHTML"
+                      style="display: inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <select name="role" class="form-control" style="width: auto; display: inline-block; padding: 0.2rem 0.4rem; font-size: 0.85rem;"
+                            onchange="this.form.submit()">
+                        {% for r in ['admin', 'manager', 'operator', 'viewer'] %}
+                            <option value="{{ r }}" {{ 'selected' if user.role == r }}>{{ r|title }}</option>
+                        {% endfor %}
+                    </select>
+                </form>
+            </td>
+            <td>
+                {% if user.locked_until and user.locked_until.year > 2050 %}
+                    <span class="badge badge-inactive">Frozen</span>
+                {% elif not user.is_active %}
+                    <span class="badge badge-inactive">Deactivated</span>
+                {% elif user.locked_until %}
+                    <span class="badge badge-pending">Locked</span>
+                {% else %}
+                    <span class="badge badge-active">Active</span>
+                {% endif %}
+            </td>
+            <td>{{ user.last_login|fmt_datetime or 'Never' }}</td>
+            <td>
+                <div style="display: flex; gap: 0.25rem; flex-wrap: wrap;">
+                    {% if user.is_active %}
+                        <form method="POST" action="{{ url_for('admin.deactivate_user', user_id=user.id) }}"
+                              hx-post="{{ url_for('admin.deactivate_user', user_id=user.id) }}"
+                              hx-target="#user-table-container" hx-swap="innerHTML"
+                              hx-confirm="Deactivate user {{ user.username }}?">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-danger btn-sm">Deactivate</button>
+                        </form>
+                    {% else %}
+                        <form method="POST" action="{{ url_for('admin.activate_user', user_id=user.id) }}"
+                              hx-post="{{ url_for('admin.activate_user', user_id=user.id) }}"
+                              hx-target="#user-table-container" hx-swap="innerHTML">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-success btn-sm">Activate</button>
+                        </form>
+                    {% endif %}
+
+                    {% if user.locked_until and user.locked_until.year > 2050 %}
+                        <form method="POST" action="{{ url_for('admin.unfreeze_user', user_id=user.id) }}"
+                              hx-post="{{ url_for('admin.unfreeze_user', user_id=user.id) }}"
+                              hx-target="#user-table-container" hx-swap="innerHTML">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-secondary btn-sm">Unfreeze</button>
+                        </form>
+                    {% else %}
+                        <form method="POST" action="{{ url_for('admin.freeze_user', user_id=user.id) }}"
+                              hx-post="{{ url_for('admin.freeze_user', user_id=user.id) }}"
+                              hx-target="#user-table-container" hx-swap="innerHTML"
+                              hx-confirm="Freeze user {{ user.username }}? They will not be able to log in.">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-secondary btn-sm">Freeze</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

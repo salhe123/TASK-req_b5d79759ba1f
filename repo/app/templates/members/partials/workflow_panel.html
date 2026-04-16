@@ -1,0 +1,73 @@
+<div class="workflow-grid">
+    <div class="card">
+        <h3>Available Actions</h3>
+
+        {% if available_actions %}
+            <div class="workflow-actions">
+                {% for action in available_actions %}
+                    {% if action in ['UPGRADE', 'DOWNGRADE'] %}
+                        <form hx-post="{{ url_for('workflow.execute', member_id=member.id) }}"
+                              hx-target="#workflow-panel" class="workflow-action-form">
+                            <input type="hidden" name="action" value="{{ action }}">
+
+                            {% if action == 'UPGRADE' %}
+                                <select name="new_membership_type" class="form-control" required>
+                                    <option value="">Select tier...</option>
+                                    {% for opt in upgrade_options %}
+                                        <option value="{{ opt }}">{{ opt|title }}</option>
+                                    {% endfor %}
+                                </select>
+                            {% elif action == 'DOWNGRADE' %}
+                                <select name="new_membership_type" class="form-control" required>
+                                    <option value="">Select tier...</option>
+                                    {% for opt in downgrade_options %}
+                                        <option value="{{ opt }}">{{ opt|title }}</option>
+                                    {% endfor %}
+                                </select>
+                            {% endif %}
+
+                            <input type="text" name="notes" class="form-control" placeholder="Notes (optional)">
+                            <button type="submit" class="btn btn-{{ 'success' if action in ['JOIN', 'RENEW', 'REACTIVATE', 'UPGRADE'] else ('danger' if action in ['CANCEL', 'DEACTIVATE'] else 'secondary') }}">
+                                {{ action }}
+                            </button>
+                        </form>
+                    {% else %}
+                        <form hx-post="{{ url_for('workflow.execute', member_id=member.id) }}"
+                              hx-target="#workflow-panel"
+                              hx-confirm="{{ 'Are you sure?' if action in ['CANCEL', 'DEACTIVATE'] else '' }}"
+                              class="workflow-action-form">
+                            <input type="hidden" name="action" value="{{ action }}">
+                            <input type="text" name="notes" class="form-control" placeholder="Notes (optional)">
+                            <button type="submit" class="btn btn-{{ 'success' if action in ['JOIN', 'RENEW', 'REACTIVATE'] else ('danger' if action in ['CANCEL', 'DEACTIVATE'] else 'secondary') }}">
+                                {{ action }}
+                            </button>
+                        </form>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-muted">No actions available for current status.</p>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <h3>Current State</h3>
+        <dl class="detail-list">
+            <dt>Status</dt>
+            <dd>
+                <span class="badge badge-{{ 'active' if member.status == 'active' else ('pending' if member.status == 'pending' else 'inactive') }}">
+                    {{ member.status|title }}
+                </span>
+            </dd>
+            <dt>Membership Type</dt>
+            <dd>{{ member.membership_type|title }}</dd>
+            <dt>Version</dt>
+            <dd>{{ member.version }}</dd>
+        </dl>
+    </div>
+</div>
+
+<div class="card" style="margin-top: 1.5rem;">
+    <h3>Timeline</h3>
+    {% include "members/partials/timeline.html" %}
+</div>

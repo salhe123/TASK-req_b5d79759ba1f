@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Addresses - {{ member.full_name }} - Field Service Manager{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-row">
+        <div>
+            <h2>Addresses: {{ member.full_name }}</h2>
+            <p class="text-muted">Manage addresses for this member</p>
+        </div>
+        <div class="page-actions">
+            <a href="{{ url_for('dispatch.create_address', member_id=member.id) }}" class="btn btn-primary">Add Address</a>
+            <a href="{{ url_for('dispatch.check_eligibility', member_id=member.id) }}" class="btn btn-success">Check Eligibility</a>
+            <a href="{{ url_for('members.detail', member_id=member.id) }}" class="btn btn-secondary">Back to Member</a>
+        </div>
+    </div>
+</div>
+
+<div id="address-list">
+    {% include "dispatch/partials/address_list.html" %}
+</div>
+{% endblock %}

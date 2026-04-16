@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Search Logs - Field Service Manager{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-row">
+        <h2>Search Logs</h2>
+        <a href="{{ url_for('search.index') }}" class="btn btn-secondary">Back to Search</a>
+    </div>
+</div>
+
+{% if logs %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Query</th>
+            <th>Results</th>
+            <th>Latency</th>
+            <th>Filters</th>
+            <th>User</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for log in logs %}
+        <tr>
+            <td>{{ log.created_at|fmt_datetime }}</td>
+            <td><code>{{ log.query }}</code></td>
+            <td>{{ log.results_count }}</td>
+            <td>{{ "%.1f"|format(log.latency_ms) if log.latency_ms else '-' }}ms</td>
+            <td>{{ log.filters or '-' }}</td>
+            <td>{{ log.user.username if log.user else '-' }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="card">
+    <p class="text-muted">No search logs yet.</p>
+</div>
+{% endif %}
+{% endblock %}

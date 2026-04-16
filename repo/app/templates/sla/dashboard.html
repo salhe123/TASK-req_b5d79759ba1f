@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}SLA Monitoring - Field Service Manager{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-row">
+        <h2>SLA Monitoring</h2>
+        <div class="page-actions">
+            <a href="{{ url_for('sla.violations') }}" class="btn btn-danger">All Violations</a>
+        </div>
+    </div>
+</div>
+
+<div class="audit-stats">
+    {% for s in stats.summary %}
+    <div class="stat-card">
+        <div class="stat-value {{ 'stat-danger' if s.compliance_pct < 95 }}">{{ s.compliance_pct }}%</div>
+        <div class="stat-label">{{ s.metric_type|replace('_', ' ')|title }} SLA</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ s.avg_ms }}ms</div>
+        <div class="stat-label">Avg Latency</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ s.max_ms }}ms</div>
+        <div class="stat-label">Max Latency</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ s.count }}</div>
+        <div class="stat-label">Total Requests</div>
+    </div>
+    {% endfor %}
+    <div class="stat-card">
+        <div class="stat-value stat-danger">{{ stats.unacknowledged }}</div>
+        <div class="stat-label">Open Violations</div>
+    </div>
+</div>
+
+{% if stats.summary %}
+<div class="detail-grid">
+    <div class="card">
+        <h3>SLA Compliance</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Metric</th>
+                    <th>Threshold</th>
+                    <th>Avg</th>
+                    <th>Min</th>
+                    <th>Max</th>
+                    <th>Requests</th>
+                    <th>Within SLA</th>
+                    <th>Compliance</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in stats.summary %}
+                <tr>
+                    <td>{{ s.metric_type|replace('_', ' ')|title }}</td>
+                    <td>{{ s.threshold_ms }}ms</td>
+                    <td>{{ s.avg_ms }}ms</td>
+                    <td>{{ s.min_ms }}ms</td>
+                    <td>{{ s.max_ms }}ms</td>
+                    <td>{{ s.count }}</td>
+                    <td>{{ s.within_sla }}</td>
+                    <td>
+                        <span class="badge badge-{{ 'active' if s.compliance_pct >= 95 else ('pending' if s.compliance_pct >= 80 else 'inactive') }}">
+                            {{ s.compliance_pct }}%
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if stats.trend %}
+    <div class="card">
+        <h3>Latency Trend (24h)</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Hour</th>
+                    <th>Avg Latency</th>
+                    <th>Requests</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in stats.trend %}
+                <tr>
+                    <td>{{ t.hour }}</td>
+                    <td>{{ t.avg_ms }}ms</td>
+                    <td>{{ t.count }}</td>
+                    <td>
+                        <span class="badge badge-{{ 'active' if t.avg_ms <= 2000 else 'inactive' }}">
+                            {{ 'OK' if t.avg_ms <= 2000 else 'Breach' }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</div>
+{% else %}
+<div class="card">
+    <p class="text-muted">No SLA metrics recorded yet. Perform some searches to generate data.</p>
+</div>
+{% endif %}
+
+{% if violations %}
+<div class="card" style="margin-top: 1.5rem;">
+    <h3>Recent Unacknowledged Violations</h3>
+    <div id="violation-list">
+        {% include "sla/partials/violation_list.html" %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

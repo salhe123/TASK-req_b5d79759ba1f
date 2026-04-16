@@ -1,0 +1,31 @@
+{% if timeline %}
+    <div class="timeline">
+        {% for entry in timeline %}
+            <div class="timeline-entry">
+                <div class="timeline-marker timeline-marker-{{ 'success' if entry.action in ['JOIN', 'RENEW', 'REACTIVATE', 'UPGRADE'] else ('danger' if entry.action in ['CANCEL', 'DEACTIVATE'] else 'info') }}"></div>
+                <div class="timeline-content">
+                    <div class="timeline-header">
+                        <strong>{{ entry.action }}</strong>
+                        <span class="text-muted">{{ entry.created_at|fmt_datetime }}</span>
+                    </div>
+                    <div class="timeline-body">
+                        <span class="badge badge-inactive">{{ entry.from_status or 'N/A' }}</span>
+                        &rarr;
+                        <span class="badge badge-active">{{ entry.to_status }}</span>
+                        {% if entry.from_type != entry.to_type %}
+                            &middot; {{ entry.from_type|title }} &rarr; {{ entry.to_type|title }}
+                        {% endif %}
+                    </div>
+                    {% if entry.notes %}
+                        <div class="timeline-notes">{{ entry.notes }}</div>
+                    {% endif %}
+                    {% if entry.performer %}
+                        <div class="text-muted" style="font-size: 0.8rem;">by {{ entry.performer.username }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <p class="text-muted">No history yet.</p>
+{% endif %}

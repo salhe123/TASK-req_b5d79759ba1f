@@ -1,0 +1,119 @@
+{% if result %}
+    <div class="search-meta">
+        <span>{{ result.results.total }} result{{ 's' if result.results.total != 1 }} found</span>
+        <span class="text-muted">({{ "%.1f"|format(result.latency_ms) }}ms)</span>
+    </div>
+
+    {% if result.results.items %}
+        <div class="search-results-list">
+            {% for member in result.results.items %}
+                {% set hl = result.highlights.get(member.id, {}) %}
+                <div class="search-result-card card">
+                    <div class="search-result-header">
+                        <a href="{{ url_for('members.detail', member_id=member.id) }}">
+                            {% if hl.get('first_name') and '<mark>' in hl.first_name %}
+                                {{ hl.first_name|safe_highlight|safe }} {{ hl.last_name|safe_highlight|safe }}
+                            {% elif hl.get('last_name') and '<mark>' in hl.last_name %}
+                                {{ hl.first_name|safe_highlight|safe }} {{ hl.last_name|safe_highlight|safe }}
+                            {% else %}
+                                {{ member.full_name }}
+                            {% endif %}
+                        </a>
+                        <div class="search-result-badges">
+                            <span class="badge badge-{{ 'active' if member.status == 'active' else ('pending' if member.status == 'pending' else 'inactive') }}">
+                                {{ member.status|title }}
+                            </span>
+                            <span class="badge">{{ member.membership_type|title }}</span>
+                        </div>
+                    </div>
+
+                    <div class="search-result-body">
+                        <div class="search-result-field">
+                            <strong>Email:</strong>
+                            {% if hl.get('email') and '<mark>' in hl.email %}
+                                {{ hl.email|safe_highlight|safe }}
+                            {% else %}
+                                {{ member.email }}
+                            {% endif %}
+                        </div>
+
+                        {% if member.organization %}
+                        <div class="search-result-field">
+                            <strong>Organization:</strong>
+                            {% if hl.get('organization') and '<mark>' in hl.organization %}
+                                {{ hl.organization|safe_highlight|safe }}
+                            {% else %}
+                                {{ member.organization }}
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        {% if hl.get('notes') and '<mark>' in hl.notes %}
+                        <div class="search-result-field">
+                            <strong>Notes:</strong> {{ hl.notes|safe_highlight|safe }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    {% if member.tags %}
+                    <div class="search-result-tags">
+                        {% for tag in member.tags %}
+                            <span class="tag-badge" style="background-color: {{ tag.color }}20; color: {{ tag.color }};">
+                                {{ tag.name }}
+                            </span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+
+        {% if result.results.pages > 1 %}
+        <div class="pagination">
+            {% for p in range(1, result.results.pages + 1) %}
+                {% if p == result.results.page %}
+                    <span class="active">{{ p }}</span>
+                {% else %}
+                    <a href="{{ url_for('search.index', q=query, status=status, membership_type=membership_type, tag=tag, page=p) }}"
+                       hx-get="{{ url_for('search.index', q=query, status=status, membership_type=membership_type, tag=tag, page=p) }}"
+                       hx-target="#search-results">{{ p }}</a>
+                {% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
+    {% else %}
+        <div class="card" style="margin-top: 1rem;">
+            <p class="text-muted">No members found matching your search.</p>
+
+            {% if nearby_tags is defined and nearby_tags %}
+            <div style="margin-top: 1rem;">
+                <strong>Try searching by tag:</strong>
+                <div style="margin-top: 0.5rem; display: flex; gap: 0.4rem; flex-wrap: wrap;">
+                    {% for tag in nearby_tags %}
+                        <a href="{{ url_for('search.index', tag=tag.name) }}"
+                           hx-get="{{ url_for('search.index', tag=tag.name) }}"
+                           hx-target="#search-results"
+                           class="tag-badge" style="background-color: {{ tag.color }}20; color: {{ tag.color }}; text-decoration: none;">
+                            {{ tag.name }}
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if recent_members is defined and recent_members %}
+            <div style="margin-top: 1rem;">
+                <strong>Recently added members:</strong>
+                <ul style="margin-top: 0.5rem; padding-left: 1.25rem;">
+                    {% for m in recent_members %}
+                        <li>
+                            <a href="{{ url_for('members.detail', member_id=m.id) }}">{{ m.full_name }}</a>
+                            <span class="text-muted">({{ m.membership_type|title }}, {{ m.status|title }})</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+    {% endif %}
+{% endif %}

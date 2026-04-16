@@ -1,0 +1,54 @@
+{% if logs.items %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Time</th>
+            <th>Category</th>
+            <th>Action</th>
+            <th>Entity</th>
+            <th>User</th>
+            <th>Details</th>
+            <th>IP</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for log in logs.items %}
+        <tr class="{{ 'anomaly-row' if log.is_anomaly }}">
+            <td>{{ log.created_at|fmt_datetime }}</td>
+            <td><span class="badge badge-{{ 'active' if log.category == 'auth' else ('pending' if log.category == 'workflow' else 'inactive') }}">{{ log.category }}</span></td>
+            <td>{{ log.action }}</td>
+            <td>
+                {% if log.entity_type %}
+                    {{ log.entity_type }}{% if log.entity_id %}#{{ log.entity_id }}{% endif %}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+            <td>{{ log.username or '-' }}</td>
+            <td class="audit-details">{{ log.details[:100] if log.details else '-' }}{{ '...' if log.details and log.details|length > 100 else '' }}</td>
+            <td>{{ log.ip_address or '-' }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if logs.pages > 1 %}
+<div class="pagination">
+    {% for p in range(1, logs.pages + 1) %}
+        {% if p == logs.page %}
+            <span class="active">{{ p }}</span>
+        {% else %}
+            <a href="{{ url_for('audit.index', page=p, q=query, category=category, entity_type=entity_type, anomalies='1' if anomalies else '') }}"
+               hx-get="{{ url_for('audit.index', page=p, q=query, category=category, entity_type=entity_type, anomalies='1' if anomalies else '') }}"
+               hx-target="#audit-log-table">{{ p }}</a>
+        {% endif %}
+    {% endfor %}
+</div>
+{% endif %}
+
+<p class="text-muted">{{ logs.total }} log entries (Page {{ logs.page }}/{{ logs.pages }})</p>
+{% else %}
+<div class="card">
+    <p class="text-muted">No audit log entries found.</p>
+</div>
+{% endif %}

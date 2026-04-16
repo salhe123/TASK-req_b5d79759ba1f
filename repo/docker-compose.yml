@@ -1,0 +1,20 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fieldservice-app
+    ports:
+      - "5000:5000"
+    environment:
+      FLASK_CONFIG: production
+      # REQUIRED: replace with a strong random secret before deployment
+      # Generate with: python3 -c "import secrets; print(secrets.token_hex(32))"
+      SECRET_KEY: ${SECRET_KEY:?SECRET_KEY must be set — generate with python3 -c "import secrets; print(secrets.token_hex(32))"}
+    volumes:
+      - app-instance:/app/instance
+      - app-uploads:/app/uploads
+
+volumes:
+  app-instance:
+  app-uploads:

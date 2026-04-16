@@ -1,0 +1,4 @@
+<div class="alert alert-{{ 'success' if result.eligible else 'danger' }}">
+    <strong>{{ 'Eligible' if result.eligible else 'Not Eligible' }}</strong>
+    <p style="margin: 0.25rem 0 0;">{{ result.reason }}</p>
+</div>

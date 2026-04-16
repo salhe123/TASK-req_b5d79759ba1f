@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Workflow - {{ member.full_name }} - Field Service Manager{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-row">
+        <div>
+            <h2>Workflow: {{ member.full_name }}</h2>
+            <p class="text-muted">
+                Status:
+                <span class="badge badge-{{ 'active' if member.status == 'active' else ('pending' if member.status == 'pending' else 'inactive') }}">
+                    {{ member.status|title }}
+                </span>
+                &middot; Type: {{ member.membership_type|title }}
+            </p>
+        </div>
+        <div class="page-actions">
+            <a href="{{ url_for('members.detail', member_id=member.id) }}" class="btn btn-secondary">Back to Member</a>
+        </div>
+    </div>
+</div>
+
+<div id="workflow-panel">
+    {% include "members/partials/workflow_panel.html" %}
+</div>
+{% endblock %}

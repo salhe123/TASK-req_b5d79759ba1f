@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Search - Field Service Manager{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Search Members</h2>
+</div>
+
+<div class="search-layout">
+    <div class="search-main">
+        <div class="search-bar">
+            <form hx-get="{{ url_for('search.index') }}" hx-target="#search-results" hx-push-url="true">
+                <div class="search-input-row">
+                    <input type="text" name="q" class="form-control search-input"
+                           value="{{ query }}" placeholder="Search members by name, email, organization, notes..."
+                           autofocus
+                           hx-get="{{ url_for('search.index') }}"
+                           hx-target="#search-results"
+                           hx-trigger="keyup changed delay:300ms"
+                           hx-include="[name='status'], [name='membership_type'], [name='tag']">
+                    <button type="submit" class="btn btn-primary">Search</button>
+                </div>
+
+                <div class="search-filters">
+                    <select name="status" class="form-control"
+                            hx-get="{{ url_for('search.index') }}" hx-target="#search-results"
+                            hx-include="[name='q'], [name='membership_type'], [name='tag'], [name='date_from'], [name='date_to']">
+                        <option value="">All Statuses</option>
+                        {% for s in ['pending', 'active', 'inactive', 'suspended', 'cancelled'] %}
+                            <option value="{{ s }}" {{ 'selected' if status == s }}>{{ s|title }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <select name="membership_type" class="form-control"
+                            hx-get="{{ url_for('search.index') }}" hx-target="#search-results"
+                            hx-include="[name='q'], [name='status'], [name='tag'], [name='date_from'], [name='date_to']">
+                        <option value="">All Types</option>
+                        {% for t in ['basic', 'standard', 'premium', 'enterprise'] %}
+                            <option value="{{ t }}" {{ 'selected' if membership_type == t }}>{{ t|title }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <select name="tag" class="form-control"
+                            hx-get="{{ url_for('search.index') }}" hx-target="#search-results"
+                            hx-include="[name='q'], [name='status'], [name='membership_type'], [name='date_from'], [name='date_to']">
+                        <option value="">All Tags</option>
+                        {% for t in tags %}
+                            <option value="{{ t.name }}" {{ 'selected' if tag == t.name }}>{{ t.name }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <input type="date" name="date_from" class="form-control" placeholder="From date"
+                           value="{{ date_from or '' }}"
+                           hx-get="{{ url_for('search.index') }}" hx-target="#search-results"
+                           hx-include="[name='q'], [name='status'], [name='membership_type'], [name='tag'], [name='date_to']">
+
+                    <input type="date" name="date_to" class="form-control" placeholder="To date"
+                           value="{{ date_to or '' }}"
+                           hx-get="{{ url_for('search.index') }}" hx-target="#search-results"
+                           hx-include="[name='q'], [name='status'], [name='membership_type'], [name='tag'], [name='date_from']">
+                </div>
+            </form>
+        </div>
+
+        <div id="search-results">
+            {% if result %}
+                {% include "search/partials/search_results.html" %}
+            {% else %}
+                <div class="card" style="margin-top: 1rem;">
+                    <p class="text-muted">Enter a search query or apply filters to find members.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="search-sidebar">
+        {% if trending %}
+        <div class="card">
+            <h3>Trending Searches</h3>
+            <ul class="trending-list">
+                {% for t in trending %}
+                    <li>
+                        <a href="{{ url_for('search.index', q=t.query) }}"
+                           hx-get="{{ url_for('search.index', q=t.query) }}"
+                           hx-target="#search-results">
+                            {{ t.query }}
+                        </a>
+                        <span class="text-muted">({{ t.count }}x)</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        {% if recommendations %}
+        <div class="card">
+            <h3>Recommended</h3>
+            <ul class="trending-list">
+                {% for r in recommendations %}
+                    <li>
+                        <a href="{{ url_for('search.index', q=r.query) }}"
+                           hx-get="{{ url_for('search.index', q=r.query) }}"
+                           hx-target="#search-results">
+                            {{ r.query }}
+                        </a>
+                        <span class="text-muted">{{ r.reason }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Anomaly Alerts - Field Service Manager{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-row">
+        <h2>Anomaly Alerts</h2>
+        <div class="page-actions">
+            <a href="{{ url_for('audit.alerts', resolved='1' if not show_resolved else '0') }}"
+               class="btn btn-secondary">
+                {{ 'Hide Resolved' if show_resolved else 'Show Resolved' }}
+            </a>
+            <a href="{{ url_for('audit.index') }}" class="btn btn-secondary">Back to Logs</a>
+        </div>
+    </div>
+</div>
+
+<div id="alert-list">
+    {% include "audit/partials/alert_list.html" %}
+</div>
+{% endblock %}

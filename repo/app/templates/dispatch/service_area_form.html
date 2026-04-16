@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Edit' if edit is defined else 'New' }} Service Area - Field Service Manager{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>{{ 'Edit' if edit is defined else 'New' }} Service Area</h2>
+</div>
+
+<div class="card">
+    {% set action = url_for('dispatch.edit_service_area', area_id=area.id) if edit is defined and area else url_for('dispatch.create_service_area') %}
+    <form method="POST" action="{{ action }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        {% if edit is defined and area is defined and area %}
+            <input type="hidden" name="version" value="{{ area.version }}">
+        {% endif %}
+        <div class="form-row">
+            <div class="form-group">
+                <label for="name">Name *</label>
+                <input type="text" id="name" name="name" class="form-control"
+                       value="{{ data.get('name', '') }}" required>
+            </div>
+            <div class="form-group">
+                <label for="area_type">Type</label>
+                <select id="area_type" name="area_type" class="form-control">
+                    {% set current_type = data.get('area_type', 'region') %}
+                    <option value="region" {{ 'selected' if current_type == 'region' }}>Region</option>
+                    <option value="radius" {{ 'selected' if current_type == 'radius' }}>Radius</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="region">Region (for region-based)</label>
+            <input type="text" id="region" name="region" class="form-control"
+                   value="{{ data.get('region', '') }}" placeholder="e.g. northeast">
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="center_latitude">Center Latitude (for radius-based)</label>
+                <input type="number" step="any" id="center_latitude" name="center_latitude"
+                       class="form-control" value="{{ data.get('center_latitude', '') }}">
+            </div>
+            <div class="form-group">
+                <label for="center_longitude">Center Longitude (for radius-based)</label>
+                <input type="number" step="any" id="center_longitude" name="center_longitude"
+                       class="form-control" value="{{ data.get('center_longitude', '') }}">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="radius_miles">Radius (miles)</label>
+                <input type="number" step="0.1" id="radius_miles" name="radius_miles"
+                       class="form-control" value="{{ data.get('radius_miles', 25.0) }}">
+            </div>
+            <div class="form-group">
+                <label class="form-check" style="margin-top: 1.6rem;">
+                    <input type="checkbox" name="is_active" value="1"
+                           {{ 'checked' if data.get('is_active', True) }}>
+                    <span>Active</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                {{ 'Update' if edit is defined else 'Create' }} Service Area
+            </button>
+            <a href="{{ url_for('dispatch.service_areas') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

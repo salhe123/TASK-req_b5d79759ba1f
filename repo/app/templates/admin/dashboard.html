@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Field Service Manager{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Admin Dashboard</h2>
+</div>
+
+<!-- Key Metrics -->
+<div class="audit-stats">
+    <div class="stat-card">
+        <div class="stat-value">{{ data.total_users }}</div>
+        <div class="stat-label">Total Users</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ data.active_users }}</div>
+        <div class="stat-label">Active Users</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ data.total_members }}</div>
+        <div class="stat-label">Total Members</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ data.new_members_7d }}</div>
+        <div class="stat-label">New (7d)</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value {{ 'stat-danger' if data.open_anomalies > 0 }}">{{ data.open_anomalies }}</div>
+        <div class="stat-label">Open Anomalies</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value {{ 'stat-danger' if data.open_violations > 0 }}">{{ data.open_violations }}</div>
+        <div class="stat-label">SLA Violations</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ data.avg_search_latency or '-' }}{{ 'ms' if data.avg_search_latency }}</div>
+        <div class="stat-label">Avg Search (24h)</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ data.total_searches_7d }}</div>
+        <div class="stat-label">Searches (7d)</div>
+    </div>
+</div>
+
+<!-- System Health -->
+<div class="card" style="margin-bottom: 1.5rem;">
+    <h3>System Health</h3>
+    <div class="health-grid">
+        {% for h in data.health %}
+        <div class="health-item health-{{ h.status }}">
+            <div class="health-indicator"></div>
+            <div>
+                <strong>{{ h.name }}</strong>
+                <span class="text-muted">{{ h.detail }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="dashboard-grid-3">
+    <!-- Members by Status -->
+    <div class="card">
+        <h3>Members by Status</h3>
+        {% if data.members_by_status %}
+        <table class="table">
+            <tbody>
+                {% for item in data.members_by_status %}
+                <tr>
+                    <td>
+                        <span class="badge badge-{{ 'active' if item.status == 'active' else ('pending' if item.status == 'pending' else 'inactive') }}">
+                            {{ item.status|title }}
+                        </span>
+                    </td>
+                    <td><strong>{{ item.count }}</strong></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-muted">No members yet.</p>
+        {% endif %}
+    </div>
+
+    <!-- Members by Type -->
+    <div class="card">
+        <h3>Members by Type</h3>
+        {% if data.members_by_type %}
+        <table class="table">
+            <tbody>
+                {% for item in data.members_by_type %}
+                <tr>
+                    <td>{{ item.type|title }}</td>
+                    <td><strong>{{ item.count }}</strong></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-muted">No members yet.</p>
+        {% endif %}
+    </div>
+
+    <!-- Audit by Category -->
+    <div class="card">
+        <h3>Audit Events (7d)</h3>
+        <p class="text-muted">{{ data.audit_events_24h }} events in last 24h</p>
+        {% if data.audit_by_category %}
+        <table class="table">
+            <tbody>
+                {% for item in data.audit_by_category %}
+                <tr>
+                    <td>{{ item.category|title }}</td>
+                    <td><strong>{{ item.count }}</strong></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-muted">No audit events.</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="detail-grid" style="margin-top: 1.5rem;">
+    <!-- Anomaly Alerts -->
+    <div class="card">
+        <h3>
+            Open Anomaly Alerts
+            <a href="{{ url_for('audit.alerts') }}" class="btn btn-secondary btn-sm" style="float: right;">View All</a>
+        </h3>
+        {% if data.recent_anomalies %}
+            {% for alert in data.recent_anomalies %}
+            <div class="alert alert-{{ 'danger' if alert.severity == 'critical' else 'warning' }}" style="margin-bottom: 0.5rem;">
+                <div>
+                    <strong>{{ alert.alert_type }}</strong>
+                    <p style="margin: 0.25rem 0 0; font-size: 0.875rem;">{{ alert.description }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p class="text-muted">No open alerts.</p>
+        {% endif %}
+    </div>
+
+    <!-- Recent Audit Activity -->
+    <div class="card">
+        <h3>
+            Recent Activity
+            <a href="{{ url_for('audit.index') }}" class="btn btn-secondary btn-sm" style="float: right;">View All</a>
+        </h3>
+        {% if data.recent_audit %}
+        <table class="table">
+            <thead>
+                <tr><th>Time</th><th>Category</th><th>Action</th><th>User</th></tr>
+            </thead>
+            <tbody>
+                {% for log in data.recent_audit %}
+                <tr>
+                    <td>{{ log.created_at|fmt_datetime }}</td>
+                    <td><span class="badge badge-{{ 'active' if log.category == 'auth' else 'pending' }}">{{ log.category }}</span></td>
+                    <td>{{ log.action }}</td>
+                    <td>{{ log.username or '-' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-muted">No recent activity.</p>
+        {% endif %}
+    </div>
+</div>
+
+{% if data.recent_jobs %}
+<div class="card" style="margin-top: 1.5rem;">
+    <h3>
+        Recent Cleansing Jobs
+        <a href="{{ url_for('cleansing.index') }}" class="btn btn-secondary btn-sm" style="float: right;">View All</a>
+    </h3>
+    <table class="table">
+        <thead>
+            <tr><th>ID</th><th>File</th><th>Status</th><th>Clean/Flag/Dup</th><th>Date</th></tr>
+        </thead>
+        <tbody>
+            {% for j in data.recent_jobs %}
+            <tr>
+                <td><a href="{{ url_for('cleansing.view_job', job_id=j.id) }}">#{{ j.id }}</a></td>
+                <td>{{ j.filename }}</td>
+                <td><span class="badge badge-{{ 'active' if j.status == 'completed' else 'inactive' }}">{{ j.status|title }}</span></td>
+                <td>{{ j.clean_rows }}/{{ j.flagged_rows }}/{{ j.duplicate_rows }}</td>
+                <td>{{ j.created_at|fmt_datetime }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<!-- Quick Links -->
+<div class="card" style="margin-top: 1.5rem;">
+    <h3>Quick Links</h3>
+    <div class="quick-links">
+        <a href="{{ url_for('admin.users') }}" class="btn btn-danger">User Management</a>
+        <a href="{{ url_for('admin.search_config') }}" class="btn btn-primary">Search Config</a>
+        <a href="{{ url_for('members.index') }}" class="btn btn-primary">Members</a>
+        <a href="{{ url_for('search.index') }}" class="btn btn-primary">Search</a>
+        <a href="{{ url_for('dispatch.eligibility') }}" class="btn btn-primary">Dispatch</a>
+        <a href="{{ url_for('audit.index') }}" class="btn btn-secondary">Audit Logs</a>
+        <a href="{{ url_for('sla.dashboard') }}" class="btn btn-secondary">SLA Monitor</a>
+        <a href="{{ url_for('cleansing.index') }}" class="btn btn-secondary">Data Cleansing</a>
+    </div>
+</div>
+{% endblock %}

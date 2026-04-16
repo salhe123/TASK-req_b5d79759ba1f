@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Upload CSV - Field Service Manager{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-row">
+        <h2>Upload CSV for Cleansing</h2>
+        <a href="{{ url_for('cleansing.index') }}" class="btn btn-secondary">Back</a>
+    </div>
+</div>
+
+<div class="card" style="max-width: 600px;">
+    <form method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="form-group">
+            <label for="template_id">Select Template *</label>
+            <select id="template_id" name="template_id" class="form-control" required>
+                <option value="">Choose a template...</option>
+                {% for t in templates %}
+                    <option value="{{ t.id }}">{{ t.name }} v{{ t.version }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="csv_file">CSV File *</label>
+            <input type="file" id="csv_file" name="csv_file" class="form-control"
+                   accept=".csv" required>
+            <small class="text-muted">Maximum 16MB. UTF-8 encoding recommended.</small>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Upload & Process</button>
+            <a href="{{ url_for('cleansing.index') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Search Configuration - Field Service Manager{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-row">
+        <h2>Search Configuration</h2>
+        <div class="page-actions">
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+        </div>
+    </div>
+</div>
+
+<div class="card" style="max-width: 600px;">
+    <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        {% for key, cfg in config.items() %}
+        <div class="form-group">
+            <label for="{{ key }}">{{ cfg.label }}</label>
+            <input type="number" id="{{ key }}" name="{{ key }}" class="form-control"
+                   value="{{ cfg.value }}" min="1">
+            <small class="text-muted">Default: {{ cfg.default }}</small>
+        </div>
+        {% endfor %}
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Save Configuration</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

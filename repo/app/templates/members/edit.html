@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Member - Field Service Manager{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Edit Member: {{ member.full_name }}</h2>
+</div>
+
+<div id="edit-lock-warning" class="alert alert-warning" style="display: none;">
+    <strong>Edit Lock Warning:</strong>
+    <span id="edit-lock-message">You have been editing for <span id="edit-lock-timer">0</span> seconds. Please save your changes soon to avoid conflicts with other users.</span>
+</div>
+
+<div class="card">
+    <div id="member-form-container">
+        {% include "members/partials/member_form.html" %}
+    </div>
+</div>
+
+<script>
+(function() {
+    var WARN_SECONDS = 60;
+    var startTime = Date.now();
+    var warning = document.getElementById('edit-lock-warning');
+    var timerSpan = document.getElementById('edit-lock-timer');
+    var warned = false;
+
+    function checkEditTimer() {
+        var elapsed = Math.floor((Date.now() - startTime) / 1000);
+
+        if (elapsed >= WARN_SECONDS && !warned) {
+            warning.style.display = 'flex';
+            warned = true;
+        }
+
+        if (warned) {
+            timerSpan.textContent = elapsed;
+        }
+    }
+
+    setInterval(checkEditTimer, 1000);
+})();
+</script>
+{% endblock %}
