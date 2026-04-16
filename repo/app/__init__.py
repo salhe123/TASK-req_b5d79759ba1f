@@ -73,7 +73,8 @@ def _setup_db_encryption(app):
                 raise RuntimeError(
                     'DB encryption self-test FAILED on real engine: '
                     'PRAGMA cipher_version returned nothing. '
-                    'Install sqlcipher3-binary and ensure it is the active DBAPI.'
+                    'Install pysqlcipher3 + libsqlcipher-dev and ensure '
+                    'SQLCipher is the active DBAPI for the production database.'
                 )
             else:
                 logger.warning('SQLCipher not active on engine — dev/test only.')
