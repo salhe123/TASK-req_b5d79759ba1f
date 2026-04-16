@@ -63,10 +63,16 @@ def _setup_db_encryption(app):
                 raise RuntimeError(f'SQLCipher PRAGMA key failed: {e}') from e
         cursor.close()
 
-    # Self-test on the ACTUAL engine — proves encryption is active on real DB path
+    # Self-test on the ACTUAL engine via raw DBAPI cursor
+    # (PRAGMA cipher_version is a no-op on plain SQLite and doesn't return rows
+    # through SQLAlchemy text(), so we use the raw connection directly)
     try:
-        with db.engine.connect() as conn:
-            row = conn.execute(text('PRAGMA cipher_version')).fetchone()
+        raw_conn = db.engine.raw_connection()
+        try:
+            cur = raw_conn.cursor()
+            cur.execute('PRAGMA cipher_version')
+            row = cur.fetchone()
+            cur.close()
             if row and row[0]:
                 logger.info('DB encryption ACTIVE on real engine — SQLCipher %s', row[0])
             elif sqlcipher_required:
@@ -78,6 +84,8 @@ def _setup_db_encryption(app):
                 )
             else:
                 logger.warning('SQLCipher not active on engine — dev/test only.')
+        finally:
+            raw_conn.close()
     except RuntimeError:
         raise
     except Exception as e:
